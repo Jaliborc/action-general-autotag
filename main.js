@@ -17,7 +17,12 @@ async function run() {
       return core.setFailed(`no match was found for the regex '${regex.toString()}'.`)
 
     let version = matches[matches.length - 1]
+    let format = core.getInput('tag_format', { required: false }).trim()
+    let message = core.getInput('tag_message', { required: false }).trim()
+    let name = format.replace('{version}', version)
+    
     core.setOutput('version', version)
+    core.setOutput('tagname', name)
 
     if (!process.env.hasOwnProperty('INPUT_GITHUB_TOKEN') || process.env.INPUT_GITHUB_TOKEN.trim().length === 0)
       return core.setFailed('Invalid or missing GITHUB_TOKEN.')
@@ -33,17 +38,9 @@ async function run() {
       tags = {}
     }
 
-    for (let tag of tags.data) {
-      if (tag.name.trim().toLowerCase() === version.trim().toLowerCase()) {
-        core.warning(`"${tag.name.trim()}" tag already exists.`)
-        core.setOutput('tagname', '')
-        return
-      }
-    }
-
-    let format = core.getInput('tag_format', { required: false }).trim()
-    let message = core.getInput('tag_message', { required: false }).trim()
-    let name = format.replace('{version}', version)
+    for (let tag of tags.data)
+      if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
+        return core.warning(`"${tag.name.trim()}" tag already exists.`)
 
     if (message.length === 0 && tags.data.length > 0) {
       try {
@@ -58,7 +55,7 @@ async function run() {
 
     let tag
     try {
-      message = message.length > 0 ? message : `Version ${version}`
+      message = message.length > 0 ? message : `Version ${name}`
       tag = await git.git.createTag({owner, repo, tag: name, message: message, object: process.env.GITHUB_SHA, type: 'commit'})
     } catch (e) {
       return core.setFailed(e.message)
@@ -75,17 +72,12 @@ async function run() {
     }
 
     if (typeof tag === 'object' && typeof reference === 'object') {
-      core.setOutput('tagname', name)
       core.setOutput('tagsha', tag.data.sha)
       core.setOutput('taguri', reference.data.url)
       core.setOutput('tagmessage', message)
     }
   } catch (error) {
     core.warning(error.message)
-    core.setOutput('tagname', '')
-    core.setOutput('tagsha', '')
-    core.setOutput('taguri', '')
-    core.setOutput('tagmessage', '')
   }
 }
 
