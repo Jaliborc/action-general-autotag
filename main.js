@@ -47,7 +47,9 @@ async function run() {
         let latest = tags.data.shift()
         let changelog = await git.repos.compareCommits({owner, repo, base: latest.name, head: 'master'})
 
-        message = changelog.data.commits.map(commit => `**1) ${commit.commit.message}**${commit.hasOwnProperty('author') ? (commit.author.hasOwnProperty('login') ? ' (' + commit.author.login + ')' : '') : ''}\n(SHA: ${commit.sha})\n`).join('\n').trim()
+        core.warning(`message: ${message}, commits: ${changelog.data.commits.length}`)
+        message = changelog.data.commits.map(commit => `**1) ${commit.commit.message}**${commit.hasOwnProperty('author') ? (commit.author.hasOwnProperty('login') ? ' (' + commit.author.login + ')' : '') : ''}\n(SHA: ${commit.sha})\n`)
+          .join('\n').trim()
       } catch (e) {
         return core.setFailed(e.message)
       }
