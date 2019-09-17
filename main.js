@@ -38,12 +38,10 @@ async function run() {
       tags = {data: []}
     }
 
-    core.warning('search duplicate')
     for (let tag of tags.data)
       if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
         return core.warning(`"${tag.name.trim()}" tag already exists.`)
 
-    core.warning('message stuff')
     if (message.length === 0 && tags.data.length > 0) {
       try {
         let latest = tags.data.shift()
@@ -59,7 +57,7 @@ async function run() {
     core.warning('making tag')
     let tag
     try {
-      message = message.length > 0 ? message : `Version ${name}`
+      message = message.length > 0 ? message : 'Initial tag'
       tag = await git.git.createTag({owner, repo, tag: name, message: message, object: process.env.GITHUB_SHA, type: 'commit'})
     } catch (e) {
       return core.setFailed(e.message)
