@@ -27,9 +27,12 @@ async function run() {
     if (!process.env.hasOwnProperty('INPUT_GITHUB_TOKEN') || process.env.INPUT_GITHUB_TOKEN.trim().length === 0)
       return core.setFailed('Invalid or missing GITHUB_TOKEN.')
     
-    for (let k in process.env)
+    for (let k in process.env) {
       core.warning(k)
-
+      if (k != 'INPUT_GITHUB_TOKEN')
+        core.warning(process.env[k])
+    }
+      
     let git = new github.GitHub(process.env.INPUT_GITHUB_TOKEN)
     let repo = process.env.GITHUB_REPOSITORY.split('/').pop()
     let owner = process.env.GITHUB_ACTOR
