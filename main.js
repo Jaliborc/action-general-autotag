@@ -28,8 +28,8 @@ async function run() {
       return core.setFailed('Invalid or missing GITHUB_TOKEN.')
       
     let git = new github.GitHub(process.env.INPUT_GITHUB_TOKEN)
-    let repo = process.env.GITHUB_REPOSITORY.split('/').pop()
-    let owner = process.env.GITHUB_ACTOR
+    let repoID = process.env.GITHUB_REPOSITORY.split('/')
+    let owner = repoID[0], repo = repoID[1]
 
     let tags
     try {
