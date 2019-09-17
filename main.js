@@ -26,12 +26,6 @@ async function run() {
 
     if (!process.env.hasOwnProperty('INPUT_GITHUB_TOKEN') || process.env.INPUT_GITHUB_TOKEN.trim().length === 0)
       return core.setFailed('Invalid or missing GITHUB_TOKEN.')
-    
-    for (let k in process.env) {
-      core.warning(k)
-      if (k != 'INPUT_GITHUB_TOKEN')
-        core.warning(process.env[k])
-    }
       
     let git = new github.GitHub(process.env.INPUT_GITHUB_TOKEN)
     let repo = process.env.GITHUB_REPOSITORY.split('/').pop()
@@ -42,13 +36,14 @@ async function run() {
       tags = await git.repos.listTags({owner, repo, per_page: 100})
     } catch (e) {
       tags = {data: []}
-      core.warning('no tags')
     }
 
+    core.warning('search duplicate')
     for (let tag of tags.data)
       if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
         return core.warning(`"${tag.name.trim()}" tag already exists.`)
 
+    core.warning('message stuff')
     if (message.length === 0 && tags.data.length > 0) {
       try {
         let latest = tags.data.shift()
@@ -61,6 +56,7 @@ async function run() {
       }
     }
 
+    core.warning('making tag')
     let tag
     try {
       message = message.length > 0 ? message : `Version ${name}`
@@ -69,6 +65,7 @@ async function run() {
       return core.setFailed(e.message)
     }
 
+    core.warning('getting reference')
     let reference
     try {
       reference = await git.git.createRef({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
@@ -79,6 +76,7 @@ async function run() {
       return
     }
 
+    core.warning('done')
     if (typeof tag === 'object' && typeof reference === 'object') {
       core.setOutput('tagsha', tag.data.sha)
       core.setOutput('taguri', reference.data.url)
