@@ -42,9 +42,8 @@ async function run() {
       tags = await git.repos.listTags({owner, repo, per_page: 100})
     } catch (e) {
       tags = {data: []}
+      core.warning('no tags')
     }
-    
-    core.warning(tags)
 
     for (let tag of tags.data)
       if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
