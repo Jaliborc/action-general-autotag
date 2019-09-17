@@ -54,18 +54,20 @@ async function run() {
       }
     }
 
-    core.warning('making tag')
     let tag
     try {
+      core.debug('Making tag...')
       message = message.length > 0 ? message : 'Initial tag'
       tag = await git.git.createTag({owner, repo, tag: name, message: message, object: process.env.GITHUB_SHA, type: 'commit'})
+      core.warning(`Created tag ${tag.data.sha}`)
     } catch (e) {
+      core.warning({owner, repo, tag: tag})
       return core.setFailed(e.message)
     }
 
-    core.warning('getting reference')
     let reference
     try {
+      core.debug('Making reference...')
       reference = await git.git.createRef({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
       core.warning(`Reference ${reference.data.ref} available at ${reference.data.url}`)
     } catch (e) {
@@ -74,7 +76,6 @@ async function run() {
       return
     }
 
-    core.warning('done')
     if (typeof tag === 'object' && typeof reference === 'object') {
       core.setOutput('tagsha', tag.data.sha)
       core.setOutput('taguri', reference.data.url)
