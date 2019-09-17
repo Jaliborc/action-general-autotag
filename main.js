@@ -61,7 +61,6 @@ async function run() {
       tag = await git.git.createTag({owner, repo, tag: name, message: message, object: process.env.GITHUB_SHA, type: 'commit'})
       core.warning(`Created tag ${tag.data.sha}`)
     } catch (e) {
-      core.warning({owner, repo, tag: tag})
       return core.setFailed(e.message)
     }
 
@@ -71,9 +70,7 @@ async function run() {
       reference = await git.git.createRef({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
       core.warning(`Reference ${reference.data.ref} available at ${reference.data.url}`)
     } catch (e) {
-      core.warning({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
-      core.setFailed(e.message)
-      return
+      return core.setFailed(e.message)
     }
 
     if (typeof tag === 'object' && typeof reference === 'object') {
