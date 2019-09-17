@@ -35,22 +35,24 @@ async function run() {
     try {
       tags = await git.repos.listTags({owner, repo, per_page: 100})
     } catch (e) {
-      tags = {data: []}
+      core.warning('No tags were listed')
     }
 
-    for (let tag of tags.data)
-      if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
-        return core.warning(`"${tag.name.trim()}" tag already exists.`)
+    if (tags) {
+      for (let tag of tags.data)
+        if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
+          return core.warning(`"${tag.name.trim()}" tag already exists.`)
 
-    if (message.length === 0 && tags.data.length > 0) {
-      try {
-        let latest = tags.data.shift()
-        let changelog = await git.repos.compareCommits({owner, repo, base: latest.name, head: 'master'})
+      if (message.length === 0 && tags.data.length > 0) {
+        try {
+          let latest = tags.data.shift()
+          let changelog = await git.repos.compareCommits({owner, repo, base: latest.name, head: 'master'})
 
-        message = changelog.data.commits.map(commit => commit ? `\n1) ${commit.commit.message} ${commit.hasOwnProperty('author') ? (commit.author.hasOwnProperty('login') ? ' (' + commit.author.login + ')' : '') : ''}` : '')
-          .join('\n').trim()
-      } catch (e) {
-        return core.setFailed(e.message)
+          message = changelog.data.commits.map(commit => commit ? `\n1) ${commit.commit.message} ${commit.hasOwnProperty('author') ? (commit.author.hasOwnProperty('login') ? ' (' + commit.author.login + ')' : '') : ''}` : '')
+            .join('\n').trim()
+        } catch (e) {
+          return core.setFailed(e.message)
+        }
       }
     }
 
