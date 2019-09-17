@@ -44,46 +44,31 @@ async function run() {
           return core.warning(`"${tag.name.trim()}" tag already exists.`)
 
       if (message.length === 0 && tags.data.length > 0) {
-        try {
-          let latest = tags.data.shift()
-          let changelog = await git.repos.compareCommits({owner, repo, base: latest.name, head: 'master'})
-          
-          message = ''
-          
-          for (let commit of changelog.data.commits) {
-            if (commit) {
-              message += `\n1) ${commit.commit.message}`
-              
-              if (commit.author && commit.author.login)
-                message += ` (${commit.author.login })`
-            }
-          }
+        let latest = tags.data.shift()
+        let changelog = await git.repos.compareCommits({owner, repo, base: latest.name, head: 'master'})
 
-          message = message.trim()
-        } catch (e) {
-          return core.setFailed(e.message)
+        message = '\n'
+
+        for (let commit of changelog.data.commits) {
+          if (commit) {
+            message += `\n1) ${commit.commit.message}`
+
+            if (commit.author && commit.author.login)
+              message += ` (${commit.author.login })`
+          }
         }
+
+        message = message.trim()
       }
     }
 
-    let tag
-    try {
-      core.debug('Making tag...')
-      message = message.length > 0 ? message : 'Initial tag'
-      tag = await git.git.createTag({owner, repo, tag: name, message: message, object: process.env.GITHUB_SHA, type: 'commit'})
-      core.warning(`Created tag ${tag.data.sha}`)
-    } catch (e) {
-      return core.setFailed(e.message)
-    }
+    core.debug('Making tag...')
+    let tag = await git.git.createTag({owner, repo, tag: name, message: message.length > 0 ? message : 'Initial tag', object: process.env.GITHUB_SHA, type: 'commit'})
+    core.warning(`Created tag ${tag.data.sha}`)
 
-    let reference
-    try {
-      core.debug('Making reference...')
-      reference = await git.git.createRef({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
-      core.warning(`Reference ${reference.data.ref} available at ${reference.data.url}`)
-    } catch (e) {
-      return core.setFailed(e.message)
-    }
+    core.debug('Making reference...')
+    let reference = await git.git.createRef({owner, repo, ref: `refs/tags/${tag.data.tag}`, sha: tag.data.sha})
+    core.warning(`Reference ${reference.data.ref} available at ${reference.data.url}`)
 
     if (typeof tag === 'object' && typeof reference === 'object') {
       core.setOutput('tagsha', tag.data.sha)
