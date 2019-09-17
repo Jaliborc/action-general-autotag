@@ -35,7 +35,7 @@ async function run() {
     try {
       tags = await git.repos.listTags({owner, repo, per_page: 100})
     } catch (e) {
-      tags = {}
+      tags = {data: []}
     }
 
     for (let tag of tags.data)
