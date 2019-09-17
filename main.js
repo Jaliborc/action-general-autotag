@@ -51,7 +51,7 @@ async function run() {
 
         for (let commit of changelog.data.commits) {
           if (commit) {
-            message += `\n1) ${commit.commit.message}`
+            message += `\n* ${commit.commit.message}`
 
             if (commit.author && commit.author.login)
               message += ` (${commit.author.login })`
