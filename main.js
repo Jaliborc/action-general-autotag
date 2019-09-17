@@ -43,6 +43,8 @@ async function run() {
     } catch (e) {
       tags = {data: []}
     }
+    
+    core.warning(tags)
 
     for (let tag of tags.data)
       if (tag.name.trim().toLowerCase() === name.trim().toLowerCase())
