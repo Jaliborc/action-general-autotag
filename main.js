@@ -8,13 +8,13 @@ async function run() {
     let fileName = core.getInput('source_file')
     let filePath = path.join(process.env.GITHUB_WORKSPACE, fileName)
     if (!fs.existsSync(filePath))
-      return core.setFailed(`source file ${fileName} does not exist.`)
+      return core.setFailed(`Source file ${fileName} does not exist.`)
 
     let content = fs.readFileSync(filePath)
     let regex = new RegExp(core.getInput('extraction_regex'))
     let matches = String(content).match(regex)
     if (!matches)
-      return core.setFailed(`no match was found for the regex '${regex.toString()}'.`)
+      return core.warning(`No match was found for the regex '${regex.toString()}'.`)
 
     let version = matches[matches.length - 1]
     let format = core.getInput('tag_format', { required: false }).trim()
